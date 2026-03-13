@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "everything": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-everything"
+      ]
+    },
+    "systemfile": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/tmp/agent_workspaces/PROJ-1234"
+      ]
+    }
+  }
+}

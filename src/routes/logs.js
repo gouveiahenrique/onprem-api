@@ -9,7 +9,7 @@ const router = express.Router();
  * Returns recent application log entries.
  * Requires a valid Bearer token with the logs:read scope.
  */
-router.get('/', authenticate, (req, res) => {
+router.get('/', authenticate('logs:read'), (req, res) => {
   res.json({
     timestamp: new Date().toISOString(),
     entries: [

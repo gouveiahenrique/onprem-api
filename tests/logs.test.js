@@ -72,6 +72,35 @@ describe('GET /logs', () => {
     });
   });
 
+  describe('scope enforcement', () => {
+    it('returns 403 when token has no scope claim', async () => {
+      const token = jwt.sign(
+        { sub: 'test-client' },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h', issuer: process.env.JWT_ISSUER }
+      );
+      const res = await request(app)
+        .get(LOGS_ENDPOINT)
+        .set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('insufficient_scope');
+    });
+
+    it('returns 403 when token has a different scope', async () => {
+      const token = jwt.sign(
+        { sub: 'test-client', scope: 'metrics:read' },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h', issuer: process.env.JWT_ISSUER }
+      );
+      const res = await request(app)
+        .get(LOGS_ENDPOINT)
+        .set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('insufficient_scope');
+      expect(res.body.error_description).toContain('logs:read');
+    });
+  });
+
   describe('unauthorized access', () => {
     it('returns 401 when Authorization header is absent', async () => {
       const res = await request(app).get(LOGS_ENDPOINT);

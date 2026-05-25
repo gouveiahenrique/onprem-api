@@ -117,4 +117,41 @@ describe('POST /oauth/token', () => {
       expect(res.body.error).toBe('invalid_client');
     });
   });
+
+  describe('default client credentials (env vars absent)', () => {
+    let savedId;
+    let savedSecret;
+
+    beforeEach(() => {
+      savedId = process.env.OAUTH_CLIENT_ID;
+      savedSecret = process.env.OAUTH_CLIENT_SECRET;
+      delete process.env.OAUTH_CLIENT_ID;
+      delete process.env.OAUTH_CLIENT_SECRET;
+    });
+
+    afterEach(() => {
+      process.env.OAUTH_CLIENT_ID = savedId;
+      process.env.OAUTH_CLIENT_SECRET = savedSecret;
+    });
+
+    it('issues a token using built-in default credentials', async () => {
+      const res = await request(app).post(TOKEN_ENDPOINT).send({
+        grant_type: 'client_credentials',
+        client_id: 'default-client',
+        client_secret: 'insecure-default-change-me',
+      });
+      expect(res.status).toBe(200);
+      expect(res.body.token_type).toBe('Bearer');
+    });
+
+    it('rejects an unknown client when defaults are active', async () => {
+      const res = await request(app).post(TOKEN_ENDPOINT).send({
+        grant_type: 'client_credentials',
+        client_id: 'unknown',
+        client_secret: 'insecure-default-change-me',
+      });
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('invalid_client');
+    });
+  });
 });
